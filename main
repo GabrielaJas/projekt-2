@@ -1,0 +1,250 @@
+#include <iostream>
+#include <limits>
+#include <iomanip>
+
+const int ILOSC = 3;
+
+using namespace std;
+
+class napoj
+{
+private:
+    std::string nazwa_napoju;
+
+protected:
+    double cena;
+
+public:
+    napoj() : cena(0.0) {}
+    napoj(std::string nazwa) : nazwa_napoju(nazwa), cena(0.0) {}
+    napoj(const napoj&) : cena(0.0) {}
+    void set_nazwa(std::string nazwa) { nazwa_napoju = nazwa; }
+    double get_cena() { return cena; }
+    std::string get_nazwa() { return nazwa_napoju; }
+};
+
+class CocaCola : public napoj
+{
+private:
+    const int NR = 1; // numer do wyboru
+
+public:
+    CocaCola() { set_cena(); }
+    const int get_NR() { return NR; }
+    void set_cena() { cena = 5.0; set_nazwa("CocaCola"); }
+};
+
+class Pepsi : public napoj
+{
+private:
+    const int NR = 2; // numer do wyboru
+
+public:
+    Pepsi() { set_cena(); }
+    const int get_NR() { return NR; }
+    void set_cena() { cena = 4.0; set_nazwa("Pepsi"); }
+};
+
+class Tymbark : public napoj
+{
+private:
+    const int NR = 3; // numer do wyboru
+
+public:
+    Tymbark() { set_cena(); }
+    const int get_NR() { return NR; }
+    void set_cena() { cena = 2.0; set_nazwa("Tymbark"); }
+};
+
+class Interakcja
+{
+private:
+    napoj* wybrany_napoj;
+
+public:
+    Interakcja();               // konstruktor domyślny
+    ~Interakcja();              // destruktor
+    int choose_drink();         // wybiera napój
+    void check_number(int& chosen_number); // sprawdza numer
+    void show_price();
+    std::string get_wybrana_nazwa();
+};
+
+class Money
+{
+private:
+    double total_money; // zmieniono miejsce deklaracji zmiennej
+
+public:
+    Money();    //domyślny
+    ~Money();
+    double money_input();
+    double money_output(double price);
+    double check_money(double price);
+};
+
+Interakcja::Interakcja() : wybrany_napoj(nullptr) {}
+
+Interakcja::~Interakcja()
+{
+    delete wybrany_napoj; // zwalnia pamięć przy zakończeniu działania obiektu
+}
+
+int Interakcja::choose_drink()
+{
+    int drinknumber; // użytkownik wybiera numer
+    do
+    {
+        cout << "Wybierz napoj: ";
+        cin >> drinknumber;
+        check_number(drinknumber);
+    } while (drinknumber > ILOSC);
+
+    delete wybrany_napoj; // zwalnia pamięć, jeśli była już zaalokowana
+    switch (drinknumber)
+    {
+    case 1:
+        wybrany_napoj = new CocaCola();
+        break;
+    case 2:
+        wybrany_napoj = new Pepsi();
+        break;
+    case 3:
+        wybrany_napoj = new Tymbark();
+        break;
+    }
+
+    return drinknumber;
+}
+
+void Interakcja::check_number(int& chosen_number)
+{
+    if (chosen_number > ILOSC)
+    {
+        cout << "Brak wybranego napoju. Wybierz inny numer." << endl;
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    }
+}
+
+void Interakcja::show_price()
+{
+    if (wybrany_napoj != nullptr)
+    {
+        cout << fixed << setprecision(2) << "Cena wybranego napoju to: " << wybrany_napoj->get_cena() << " zl. Dawaj kase.\n" << endl;
+    }
+    else
+    {
+        cout << "Nie wybrano napoju." << endl;
+    }
+}
+
+std::string Interakcja::get_wybrana_nazwa()
+{
+    if (wybrany_napoj != nullptr)
+    {
+        return wybrany_napoj->get_nazwa();
+    }
+    else
+    {
+        return "Brak wybranego napoju";
+    }
+}
+
+Money::Money() : total_money(0.0) {}
+
+Money::~Money()
+{
+    // Nie ma potrzeby usuwania obiektu, ponieważ nie alokujemy dynamicznie pamięci
+}
+
+double Money::money_input()
+{
+    double coin;
+
+    cout << "Wprowadz monety 1 zl, 2 zl, 5 zl. Wpisz 0, aby zakonczyc: " << endl;
+
+    do
+    {
+        cin >> coin;
+
+        // Sprawdź, czy wprowadzona moneta jest prawidłowa
+        if (coin == 1.0 || coin == 2.0 || coin == 5.0)
+        {
+            total_money += coin;
+            cout << "Aktualna ilosc wprowadzonych pieniedzy: " << fixed << setprecision(2) << total_money << " zl." << endl;
+        }
+        else if (coin != 0.0)
+        {
+            cout << "Nieprawidlowa moneta. Wprowadz 1 zl, 2 zl, 5 zl lub 0, aby zakonczyc." << endl;
+        }
+
+    } while (coin != 0.0);
+
+    return total_money;
+}
+
+double Money::money_output(double price)
+{
+    double change = total_money - price;
+
+    if (change < 0)
+    {
+        cout << "Niewystarczajaca ilosc pieniedzy. Brakuje: " << fixed << setprecision(2) << -change << " zl." << endl;
+        return -1; // oznacza brak wystarczającej ilości pieniędzy
+    }
+    else
+    {
+        total_money = 0; // reszta została wydana, więc zerujemy ilość pieniędzy
+        return change;
+    }
+}
+
+double Money::check_money(double price)
+{
+    double total_money_backup = total_money; // zachowujemy oryginalną wartość pieniędzy
+    double additional_money = money_input(); // użytkownik wprowadza dodatkową kwotę
+
+    while (total_money < price)
+    {
+        cout << "Wprowadzono niewystarczajaca ilosc pieniedzy. Wprowadz wiecej monet." << endl;
+        additional_money = money_input(); // użytkownik wprowadza więcej pieniędzy
+    }
+
+    total_money += total_money_backup; // przywracamy oryginalną wartość pieniędzy
+
+    return additional_money;
+}
+
+int main()
+{
+    cout << "Automat przyjmuje monety 1 zl, 2 zl i 5 zl \n NR 1\t\t NR 2\t\t NR 3\n CocaCola\t Pepsi\t\t Tymbark\n 5 zl\t\t 4zl\t\t 2 zl\n";
+    Interakcja interakcja;
+
+    int chosen_number = interakcja.choose_drink();
+
+    cout << "Wybrany napoj to: " << chosen_number << endl;
+    interakcja.show_price();
+    Money money_manager;
+    double total_money = money_manager.check_money(interakcja.get_wybrana_nazwa() == "CocaCola" ? 5.0 : (interakcja.get_wybrana_nazwa() == "Pepsi" ? 4.0 : 2.0));
+
+    if (total_money < 0)
+    {
+        cout << "Anulowano transakcje. Brak wystarczajacej ilosci pieniedzy." << endl;
+        return 0;
+    }
+
+    cout << "Automat wydaje napoj...\n" << endl;
+    cout << "Oto twoj napoj: " << interakcja.get_wybrana_nazwa() << endl;
+
+    double change = money_manager.money_output(interakcja.get_wybrana_nazwa() == "CocaCola" ? 5.0 : (interakcja.get_wybrana_nazwa() == "Pepsi" ? 4.0 : 2.0));
+
+    if (change >= 0)
+    {
+        cout << "\nAutomat wydaje reszte...\n";
+        cout << "\nOto twoja reszta: " << fixed << setprecision(2) << change << " zl." << endl;
+    }
+
+    return 0;
+}
+ //reszta może być wydawana jako monety, czyli generuje losowo liczby 1,2, 5 tak żeby suma była równa sumie reszty
