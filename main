@@ -247,4 +247,4 @@ int main()
 
     return 0;
 }
- //reszta może być wydawana jako monety, czyli generuje losowo liczby 1,2, 5 tak żeby suma była równa sumie reszty
+ 
