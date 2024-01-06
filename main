@@ -1,7 +1,14 @@
+//Gabriela Jas 313561
+//Projekt 2
+//Automat z napojami
+
 #include <iostream>
 #include <limits>
 #include <iomanip>
 #include <vector>
+#include <string>
+#include <cctype>
+#include <sstream>
 
 const int ILOSC = 3;
 
@@ -63,8 +70,8 @@ private:
     napoj* wybrany_napoj;
 
 public:
-    Interakcja();               // konstruktor domyślny
-    ~Interakcja();              // destruktor
+    Interakcja();               
+    ~Interakcja();              
     int choose_drink();         // wybiera napój
     void check_number(int& chosen_number); // sprawdza numer
     void show_price();
@@ -74,11 +81,11 @@ public:
 class Money
 {
 private:
-    double total_money; // zmieniono miejsce deklaracji zmiennej
+    double total_money; 
     const double nominaly[3] = { 5.0, 2.0, 1.0 };
 
 public:
-    Money();    //domyślny
+    Money();    
     ~Money();
     double money_input();
     double money_output(double price);
@@ -90,7 +97,7 @@ Interakcja::Interakcja() : wybrany_napoj(nullptr) {}
 
 Interakcja::~Interakcja()
 {
-    delete wybrany_napoj; // zwalnia pamięć przy zakończeniu działania obiektu
+    delete wybrany_napoj; 
 }
 
 int Interakcja::choose_drink()
@@ -99,11 +106,17 @@ int Interakcja::choose_drink()
     do
     {
         cout << "Wybierz napoj: ";
-        cin >> drinknumber;
+        while (!(cin >> drinknumber))
+        {
+            cout << "Nieprawidlowa wartosc. Wybierz ponownie: ";
+            cin.clear();
+            cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        }
+
         check_number(drinknumber);
     } while (drinknumber > ILOSC);
 
-    delete wybrany_napoj; // zwalnia pamięć, jeśli była już zaalokowana
+    delete wybrany_napoj; 
     switch (drinknumber)
     {
     case 1:
@@ -119,6 +132,7 @@ int Interakcja::choose_drink()
 
     return drinknumber;
 }
+
 
 void Interakcja::check_number(int& chosen_number)
 {
@@ -165,21 +179,20 @@ double Money::money_input()
 {
     double coin;
 
-    cout << "Wprowadz monety 1 zl, 2 zl, 5 zl. Wpisz 0, aby zakonczyc: " << endl;
+    std::cout << "Wprowadz monety 1 zl, 2 zl, 5 zl. Wpisz 0, aby zakonczyc: " << std::endl;
 
     do
     {
-        cin >> coin;
-
-        // Sprawdź, czy wprowadzona moneta jest prawidłowa
-        if (coin == 1.0 || coin == 2.0 || coin == 5.0)
+        if (!(std::cin >> coin) || (coin != 1.0 && coin != 2.0 && coin != 5.0 && coin != 0.0))
         {
-            total_money += coin;
-            cout << "Aktualna ilosc wprowadzonych pieniedzy: " << fixed << setprecision(2) << total_money << " zl." << endl;
+            std::cout << "Nieprawidlowa moneta. Wprowadz 1 zl, 2 zl, 5 zl lub 0, aby zakonczyc." << std::endl;
+            std::cin.clear();
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         }
         else if (coin != 0.0)
         {
-            cout << "Nieprawidlowa moneta. Wprowadz 1 zl, 2 zl, 5 zl lub 0, aby zakonczyc." << endl;
+            total_money += coin;
+            std::cout << "Aktualna ilosc wprowadzonych pieniedzy: " << std::fixed << std::setprecision(2) << total_money << " zl." << std::endl;
         }
 
     } while (coin != 0.0);
@@ -233,7 +246,6 @@ std::vector<double> Money::wydawanie_reszty(double change) {
 
     return wydaneNominaly;
 }
-
 
 
 int main()
